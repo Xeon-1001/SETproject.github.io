@@ -7,6 +7,28 @@ try:
 except ImportError:
     GRAPHVIZ_INSTALLED = False
 
+def display_graphviz_installation_instructions():
+    """Displays a formatted, user-friendly message for installing Graphviz."""
+    with st.container(border=True):
+        st.error("🎨 Graph Visualization Disabled", icon="🎨")
+        st.write("To enable the interactive graph visualizations, the `graphviz` library is required. Please follow the steps below:")
+        st.markdown("""
+            **Step 1: Install the Python Package**
+            
+            Open your terminal or command prompt and run this command:
+        """)
+        st.code("pip install graphviz streamlit", language="bash")
+        st.markdown("""
+            ---
+            **Step 2: Install the Graphviz System Software**
+
+            The Python package needs the underlying Graphviz software to function. You must install it for your operating system.
+            
+            ➡️ [**Click here to go to the official Graphviz download page**](https://graphviz.org/download/)
+            
+            *After installing, you may need to restart your terminal or computer. Then, restart the Streamlit app.*
+        """)
+
 def render_fuzzy_graph_theory():
     """Renders the educational section on Fuzzy Graph Theory."""
     st.header("1. Fuzzy Graph Theory: An Introduction")
@@ -88,10 +110,7 @@ def render_fuzzy_graph_theory():
             else:
                 st.success("This is a valid fuzzy graph!")
         else:
-            st.error("Graphviz is not installed, so graph visualization is disabled.")
-            st.info("To see the graph, please install the necessary packages. In your terminal, run:")
-            st.code("pip install graphviz", language="bash")
-            st.warning("You may also need to install the Graphviz system package. See the official Graphviz website for download instructions for your OS.")
+            display_graphviz_installation_instructions()
 
     st.subheader("Key Terminology and Operations")
     with st.expander("Path, Strength, and Connectivity"):
@@ -224,8 +243,7 @@ def render_research_paper_summary():
 
             st.graphviz_chart(mst_dot)
         else:
-            st.error("Graphviz is not installed. The MST visualization is disabled.")
-            st.info("Please install Graphviz to see this interactive demo.")
+            display_graphviz_installation_instructions()
 
 
     with app_tab3:
@@ -249,3 +267,4 @@ if selection == "Fuzzy Graph Theory":
     render_fuzzy_graph_theory()
 else:
     render_research_paper_summary()
+
