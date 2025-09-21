@@ -1,5 +1,11 @@
 import streamlit as st
-import graphviz
+
+# Gracefully handle the case where graphviz is not installed
+try:
+    import graphviz
+    GRAPHVIZ_INSTALLED = True
+except ImportError:
+    GRAPHVIZ_INSTALLED = False
 
 def render_fuzzy_graph_theory():
     """Renders the educational section on Fuzzy Graph Theory."""
@@ -62,25 +68,30 @@ def render_fuzzy_graph_theory():
     if mu_ac > min(sigma_a, sigma_c):
         violations.append(f"Edge A-C ({mu_ac:.2f}) is stronger than min(A, C) = {min(sigma_a, sigma_c):.2f}")
 
-    # Create Graphviz graph
-    dot = graphviz.Graph()
-    dot.attr('node', shape='circle', style='filled', fillcolor='lightblue', fontcolor='black')
-    dot.attr('edge', fontcolor='darkgreen')
-    dot.node('A', f"A (σ={sigma_a:.2f})")
-    dot.node('B', f"B (σ={sigma_b:.2f})")
-    dot.node('C', f"C (σ={sigma_c:.2f})")
-    dot.edge('A', 'B', label=f"μ={mu_ab:.2f}")
-    dot.edge('B', 'C', label=f"μ={mu_bc:.2f}")
-    dot.edge('A', 'C', label=f"μ={mu_ac:.2f}")
-
     with col2:
         st.write("Generated Fuzzy Graph:")
-        st.graphviz_chart(dot)
-        if violations:
-            for v in violations:
-                st.warning(f"Rule Violation: {v}")
+        if GRAPHVIZ_INSTALLED:
+            # Create Graphviz graph
+            dot = graphviz.Graph()
+            dot.attr('node', shape='circle', style='filled', fillcolor='lightblue', fontcolor='black')
+            dot.attr('edge', fontcolor='darkgreen')
+            dot.node('A', f"A (σ={sigma_a:.2f})")
+            dot.node('B', f"B (σ={sigma_b:.2f})")
+            dot.node('C', f"C (σ={sigma_c:.2f})")
+            dot.edge('A', 'B', label=f"μ={mu_ab:.2f}")
+            dot.edge('B', 'C', label=f"μ={mu_bc:.2f}")
+            dot.edge('A', 'C', label=f"μ={mu_ac:.2f}")
+            st.graphviz_chart(dot)
+            if violations:
+                for v in violations:
+                    st.warning(f"Rule Violation: {v}")
+            else:
+                st.success("This is a valid fuzzy graph!")
         else:
-            st.success("This is a valid fuzzy graph!")
+            st.error("Graphviz is not installed, so graph visualization is disabled.")
+            st.info("To see the graph, please install the necessary packages. In your terminal, run:")
+            st.code("pip install graphviz", language="bash")
+            st.warning("You may also need to install the Graphviz system package. See the official Graphviz website for download instructions for your OS.")
 
     st.subheader("Key Terminology and Operations")
     with st.expander("Path, Strength, and Connectivity"):
@@ -189,28 +200,32 @@ def render_research_paper_summary():
         st.markdown("Imagine we have 10 cars and their similarity scores. The algorithm builds the strongest possible 'skeleton' connecting all cars (the MST). We can then form clusters by 'cutting' the weakest links.")
         
         threshold = st.slider("Set Similarity Threshold (α)", 0.5, 0.9, 0.65, 0.01)
-
-        # Simplified MST from the paper's car example
-        mst_dot = graphviz.Graph(comment='Maximum Spanning Tree')
-        mst_dot.attr('node', shape='circle', style='filled', fillcolor='lightcoral')
         
-        edges = {
-            ('G9', 'G4'): 0.87, ('G7', 'G2'): 0.83, ('G6', 'G1'): 0.82,
-            ('G7', 'G3'): 0.81, ('G7', 'G8'): 0.74, ('G10', 'G5'): 0.76,
-            ('G3', 'G9'): 0.64, ('G8', 'G10'): 0.69, ('G1', 'G4'): 0.64,
-        }
-
-        for (u, v), weight in edges.items():
-            if weight >= threshold:
-                mst_dot.edge(u, v, label=f"{weight:.2f}")
-            else:
-                # To show they exist but are cut, we can add them as dotted or just omit them
-                # For clarity, we'll just show the connected graph
-                mst_dot.node(u)
-                mst_dot.node(v)
-
         st.write(f"By cutting all connections weaker than **{threshold:.2f}**, the cars separate into distinct clusters.")
-        st.graphviz_chart(mst_dot)
+
+        if GRAPHVIZ_INSTALLED:
+            # Simplified MST from the paper's car example
+            mst_dot = graphviz.Graph(comment='Maximum Spanning Tree')
+            mst_dot.attr('node', shape='circle', style='filled', fillcolor='lightcoral')
+            
+            edges = {
+                ('G9', 'G4'): 0.87, ('G7', 'G2'): 0.83, ('G6', 'G1'): 0.82,
+                ('G7', 'G3'): 0.81, ('G7', 'G8'): 0.74, ('G10', 'G5'): 0.76,
+                ('G3', 'G9'): 0.64, ('G8', 'G10'): 0.69, ('G1', 'G4'): 0.64,
+            }
+
+            for (u, v), weight in edges.items():
+                if weight >= threshold:
+                    mst_dot.edge(u, v, label=f"{weight:.2f}")
+                else:
+                    # To show they exist but are cut, we ensure the nodes are still present
+                    mst_dot.node(u)
+                    mst_dot.node(v)
+
+            st.graphviz_chart(mst_dot)
+        else:
+            st.error("Graphviz is not installed. The MST visualization is disabled.")
+            st.info("Please install Graphviz to see this interactive demo.")
 
 
     with app_tab3:
